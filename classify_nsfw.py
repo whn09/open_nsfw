@@ -86,8 +86,14 @@ def main(argv):
     parser = argparse.ArgumentParser()
     # Required arguments: input file.
     parser.add_argument(
-        "input_file",
-        help="Path to the input image file"
+        "--input_file",
+        help="Path to the input image file",
+        default=''
+    )
+    parser.add_argument(
+        "--input_dir",
+        help="Path to the input image directory",
+        default=''
     )
 
     # Optional arguments.
@@ -101,7 +107,6 @@ def main(argv):
     )
 
     args = parser.parse_args()
-    image_data = open(args.input_file).read()
 
     # Pre-load caffe model.
     nsfw_net = caffe.Net(args.model_def,  # pylint: disable=invalid-name
@@ -115,13 +120,23 @@ def main(argv):
     caffe_transformer.set_raw_scale('data', 255)  # rescale from [0, 1] to [0, 255]
     caffe_transformer.set_channel_swap('data', (2, 1, 0))  # swap channels from RGB to BGR
 
-    # Classify.
-    scores = caffe_preprocess_and_compute(image_data, caffe_transformer=caffe_transformer, caffe_net=nsfw_net, output_layers=['prob'])
+    if args.input_file != '':
+        image_data = open(args.input_file).read()
 
-    # Scores is the array containing SFW / NSFW image probabilities
-    # scores[1] indicates the NSFW probability
-    print "NSFW score:  " , scores[1]
+        # Classify.
+        scores = caffe_preprocess_and_compute(image_data, caffe_transformer=caffe_transformer, caffe_net=nsfw_net, output_layers=['prob'])
 
+        # Scores is the array containing SFW / NSFW image probabilities
+        # scores[1] indicates the NSFW probability
+        print("NSFW score:" , scores[1])
+        
+    if args.input_dir != '':
+        input_files = os.listdir(args.input_dir)
+        for input_file in input_files:
+            if input_file.endswith('.jpg') or input_file.endswith('.png'):
+                image_data = open(os.path.join(args.input_dir, input_file)).read()
+                scores = caffe_preprocess_and_compute(image_data, caffe_transformer=caffe_transformer, caffe_net=nsfw_net, output_layers=['prob'])
+                print(input_file, scores[1])
 
 
 if __name__ == '__main__':

@@ -133,10 +133,20 @@ def main(argv):
     if args.input_dir != '':
         input_files = os.listdir(args.input_dir)
         for input_file in input_files:
-            if input_file.endswith('.jpg') or input_file.endswith('.png'):
-                image_data = open(os.path.join(args.input_dir, input_file)).read()
-                scores = caffe_preprocess_and_compute(image_data, caffe_transformer=caffe_transformer, caffe_net=nsfw_net, output_layers=['prob'])
-                print(input_file, scores[1])
+            if os.path.isdir(os.path.join(args.input_dir, input_file)):  # TODO support two level directory
+                filenames = os.listdir(os.path.join(args.input_dir, input_file))
+                for i in range(len(filenames)):
+                    filenames[i] = os.path.join(input_file, filenames[i])
+            else:
+                filenames = [input_file]
+            for filename in filenames:
+                if filename.endswith('.jpg') or filename.endswith('.png'):
+                    try:
+                        image_data = open(os.path.join(args.input_dir, filename)).read()
+                        scores = caffe_preprocess_and_compute(image_data, caffe_transformer=caffe_transformer, caffe_net=nsfw_net, output_layers=['prob'])
+                    except:
+                        scores = [-1, -1]
+                    print(filename, scores[1])
 
 
 if __name__ == '__main__':

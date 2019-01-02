@@ -167,8 +167,8 @@ def main(argv):
     return args, nsfw_net, caffe_transformer
 
 
-def classify_nsfw(args, caffe_transformer, nsfw_net):
-    image_data = open(args.input_file).read()
+def classify_nsfw(filename):
+    image_data = open(filename).read()
 
     # Classify.
     scores = caffe_preprocess_and_compute(image_data, caffe_transformer=caffe_transformer, caffe_net=nsfw_net,
@@ -194,8 +194,7 @@ def nsfw():
         abort(BAD_REQUEST)
 
     filename = dict_query['filename']
-    args.input_file = filename
-    score = classify_nsfw(args, nsfw_net, caffe_transformer)
+    score = classify_nsfw(filename)
     result = dict()
     result['score'] = score
     return make_response(jsonify(result), STATUS_OK)

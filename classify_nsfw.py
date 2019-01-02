@@ -12,7 +12,10 @@ import argparse
 import glob
 import time
 from PIL import Image
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import caffe
 
 

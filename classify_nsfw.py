@@ -98,6 +98,11 @@ def main(argv):
         help="Path to the input image directory",
         default=''
     )
+    parser.add_argument(
+        "--output_csv",
+        help="Path to the output csv file",
+        default=''
+    )
 
     # Optional arguments.
     parser.add_argument(
@@ -135,6 +140,9 @@ def main(argv):
         
     if args.input_dir != '':
         input_files = os.listdir(args.input_dir)
+        if args.output_csv != '':
+            fout = open(args.output_csv, 'w')
+            fout.write('filename,score\n')
         for input_file in input_files:
             if os.path.isdir(os.path.join(args.input_dir, input_file)):  # TODO support two level directory
                 filenames = os.listdir(os.path.join(args.input_dir, input_file))
@@ -150,6 +158,10 @@ def main(argv):
                     except:
                         scores = [-1, -1]
                     print(filename, scores[1])
+                    if args.output_csv != '':
+                        fout.write(filename+','+str(scores[1])+'\n')
+        if args.output_csv != '':
+            fout.close()
 
 
 if __name__ == '__main__':
